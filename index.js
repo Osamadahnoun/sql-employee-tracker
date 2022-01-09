@@ -1,6 +1,6 @@
+const { byteLength } = require('base64-js');
 const inquirer = require('inquirer');
 const db = require('./db/connection');
-
 
 // db.connect(function(error) {
 //     if(error) throw error;
@@ -18,7 +18,7 @@ const chooseQuery = () => {
             type: 'list',
             name: 'choice',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'View All Roles', 'View All Departments', 'Add Department', 'Add Role']
+            choices: ['View All Employees', 'View All Roles', 'View All Departments', 'Add a Department', 'Add a Role', 'Add an Employee', 'Update Employee Role', 'Quit']
         },
         // {
         //     type: 'input',
@@ -64,11 +64,20 @@ const chooseQuery = () => {
                 chooseQuery()
             })
         }
-        else if (choice == 'Add Department') {
+        else if (choice == 'Add a Department') {
             addDepartment()
         }
-        else if (choice == 'Add Role') {
+        else if (choice == 'Add a Role') {
             addRole()
+        }
+        else if (choice == 'Add an Employee') {
+            addEmployee()
+        }
+        else if (choice == 'Update Employee Role') {
+            updateEmployee()
+        }
+        else if (choice == 'Quit') {
+            exitInquirer()
         }
     })
 }
@@ -134,5 +143,82 @@ const addRole = () => {
     }
     )
 };
+
+const addEmployee = () => {
+    return inquirer.prompt([
+        {
+            type: 'input',
+            name: 'employeeFirstName',
+            message: "What is the employee's first name?"
+        },
+        {
+            type: 'input',
+            name: 'employeeLastName',
+            message: "What is the employee's last name?"
+        },
+        {
+            type: 'input',
+            name: 'employeeRole',
+            message: "What is the employee's role? 1 = (Sales Lead) 2 = (Salesperson) 3 = (Lead Engineer) 4 = (Software Engineer) 5 = (Account Manager) 6 = (Accountant) 7 = (Legal Team Lead) 8 = (Lawyer)"
+        },
+        {
+            type: 'input',
+            name: 'employeeManager',
+            message: "Who is the employees's manager? 1 = (Osama Dahnoun) 2 = (John Doe)"
+        }
+    ])
+    .then(data => {
+        const { employeeFirstName, employeeLastName, employeeRole, employeeManager } = data;
+        if (employeeFirstName) {
+            const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?,?,?,?)`;
+            const params = [employeeFirstName, employeeLastName, employeeRole, employeeManager]
+            db.query(sql, params, (err, rows) => {
+                if(err) {
+                    console.log('error')
+                    return;
+                }
+                console.log('Added ' + employeeFirstName + ' ' + employeeLastName + ' to the database.')
+                chooseQuery()
+            })
+        }
+
+    })
+}
+
+const updateEmployee = () => {
+    return inquirer.prompt([
+        {
+            type: 'list',
+            name: 'employeeName',
+            message: "Which employee's role do you want to update?",
+            choices: ['John', 'Osama', 'Ashley', 'Kevin']
+        },
+        {
+            type: 'input',
+            name: 'employeeRole',
+            message: 'Which role do you want to assign the selected employee? 1 = (Sales Lead) 2 = (Salesperson) 3 = (Lead Engineer) 4 = (Software Engineer) 5 = (Account Manager) 6 = (Accountant) 7 = (Legal Team Lead) 8 = (Lawyer)'
+        }
+    ])
+
+    .then(data => {
+        const { employeeName, employeeRole } = data;
+        const sql = `UPDATE employee SET role_id = ? WHERE first_name = ?`;
+        const params = [employeeRole, employeeName];
+        db.query(sql, params, (err, rows) => {
+            if(err) {
+                console.log('error')
+                return;
+            }
+            console.log("Updated employee's role")
+            chooseQuery()
+        })
+    }
+    )
+}
+
+const exitInquirer = () => {
+    console.log('Gooodbye! Come back anytime!')
+}
+
 
 chooseQuery()

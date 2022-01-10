@@ -164,7 +164,7 @@ const addEmployee = () => {
         {
             type: 'input',
             name: 'employeeManager',
-            message: "Who is the employees's manager? 1 = (Osama Dahnoun) 2 = (John Doe)"
+            message: "Who is the employees's manager? 1 = (John Doe) 2 = (Osama Dahnoun) 3 = (Ashley Rodriguez)"
         }
     ])
     .then(data => {
